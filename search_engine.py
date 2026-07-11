@@ -1,7 +1,11 @@
 import os
 import requests
+from dotenv import load_dotenv  # Requires: pip install python-dotenv
 from llama_index.core import SummaryIndex
 from llama_index.readers.web import SimpleWebPageReader
+
+# Load environment variables from the .env file at startup
+load_dotenv()
 
 def run_serper_search(query: str, serper_api_key: str) -> str:
     """
@@ -15,7 +19,7 @@ def run_serper_search(query: str, serper_api_key: str) -> str:
         'X-API-KEY': serper_api_key,
         'Content-Type': 'application/json'
     }
-    # We tweak the query automatically to look for software bugs
+    # Automatically tweak the query to look for software bugs
     payload = {
         "q": f"{query} open source package bug security vulnerability",
         "num": 4
@@ -51,24 +55,21 @@ def scrape_documentation_url(url: str) -> list:
     except Exception as e:
         print(f"Web scraper encountered an error: {str(e)}")
         return []
+
+
 if __name__ == "__main__":
-    # TEST 1: Test the Google Search (Replace with your actual key to test)
-    MY_SERPER_KEY = "1ddb75c2339fa17778fc73ddb7e658481538aaff"
+    # Fetch the API key safely from your environment variables
+    api_key = os.getenv("MY_SERPER_KEY", "")
+    
+    # TEST 1: Test the Google Search
     print("--- TESTING GOOGLE SEARCH ---")
-    print(run_serper_search("PyJWT",MY_SERPER_KEY ))
+    print(run_serper_search("PyJWT", api_key))
     
     # TEST 2: Test the Web Scraper
     print("\n--- TESTING WEB SCRAPER ---")
     docs = scrape_documentation_url("https://pypi.org/project/requests/")
     if docs:
         print("Success! Scraped Text Sample:")
-        print(docs[0].text[:300]) # Prints the first 300 characters
-
-if __name__ == "__main__":
-    print("\n--- TESTING WEB SCRAPER ---")
-    docs = scrape_documentation_url("https://pypi.org/project/requests/")
-    if docs:
-        print("Success! Scraped Text Sample:")
-        print(docs[0].text[:300])
+        print(docs[0].text[:300])  # Prints the first 300 characters
     else:
         print("Scraper returned no data.")
