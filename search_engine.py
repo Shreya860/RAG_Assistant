@@ -41,17 +41,38 @@ def run_serper_search(query: str, serper_api_key: str) -> str:
         return f"Search connection failed: {str(e)}"
 
 
+from urllib.parse import urlparse
+
 def scrape_documentation_url(url: str) -> list:
     """
     Scrapes a documentation webpage and reads the raw text.
+    Validates against a strict domain allowlist to prevent SSRF attacks.
     """
     if not url:
         return []
+        
+    # Define your trusted domains
+    ALLOWED_DOMAINS = {"pypi.org", "readthedocs.org", "github.com"}
+    
     try:
+        # Extract the netloc (domain name) from the URL
+        parsed_url = urlparse(url)
+        domain = parsed_url.netloc.lower()
+        
+        # Strip out port numbers if they exist (e.g., 'localhost:8080' -> 'localhost')
+        if ":" in domain:
+            domain = domain.split(":")[0]
+            
+        # Reject the request if the domain isn't in your allowlist
+        if domain not in ALLOWED_DOMAINS:
+            print(f"Security Alert: Blocked unauthorized scrap request to domain '{domain}'")
+            return []
+            
         # html_to_text=True cleans the website code into clean words
         reader = SimpleWebPageReader(html_to_text=True)
         documents = reader.load_data(urls=[url])
         return documents
+        
     except Exception as e:
         print(f"Web scraper encountered an error: {str(e)}")
         return []
