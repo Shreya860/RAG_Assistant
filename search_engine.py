@@ -1,5 +1,6 @@
 import os
 import requests
+from urllib.parse import urlparse
 from dotenv import load_dotenv  # Requires: pip install python-dotenv
 from llama_index.core import SummaryIndex
 from llama_index.readers.web import SimpleWebPageReader
@@ -41,18 +42,16 @@ def run_serper_search(query: str, serper_api_key: str) -> str:
         return f"Search connection failed: {str(e)}"
 
 
-from urllib.parse import urlparse
-
 def scrape_documentation_url(url: str) -> list:
     """
     Scrapes a documentation webpage and reads the raw text.
-    Validates against a strict domain allowlist to prevent SSRF attacks.
+    Validates against allowed base domains to prevent SSRF while supporting subdomains.
     """
     if not url:
         return []
         
-    # Define your trusted domains
-    ALLOWED_DOMAINS = {"pypi.org", "readthedocs.org", "github.com"}
+    # Define your trusted base domains
+    ALLOWED_BASE_DOMAINS = ("pypi.org", "readthedocs.org", "readthedocs.io", "github.com")
     
     try:
         # Extract the netloc (domain name) from the URL
@@ -63,8 +62,11 @@ def scrape_documentation_url(url: str) -> list:
         if ":" in domain:
             domain = domain.split(":")[0]
             
-        # Reject the request if the domain isn't in your allowlist
-        if domain not in ALLOWED_DOMAINS:
+        # Securely check if the domain is exactly allowed, or ends with an allowed subdomain (.pypi.org)
+        # This prevents attackers from bypassing with domains like 'fake-github.com'
+        is_allowed = domain in ALLOWED_BASE_DOMAINS or domain.endswith(tuple(f".{d}" for d in ALLOWED_BASE_DOMAINS))
+        
+        if not is_allowed:
             print(f"Security Alert: Blocked unauthorized scrap request to domain '{domain}'")
             return []
             
