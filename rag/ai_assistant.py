@@ -1,14 +1,14 @@
 import os
-
 from dotenv import load_dotenv
 from google import genai
 
-
 load_dotenv()
 
-api_key = os.getenv("GEMINI_API_KEY")
+client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
 
-client = genai.Client(api_key=api_key)
+
 class GeminiAssistant:
 
     def __init__(self):
@@ -23,25 +23,23 @@ class GeminiAssistant:
     ):
 
         prompt = f"""
-You are an expert Open Source Dependency Security Auditor.
+You are an expert Open Source Dependency Auditor.
 
-Analyze the package below.
+Use ONLY the information provided below.
 
 PACKAGE
 {package_name}
 
-OFFICIAL DOCUMENTATION
+LOCAL DOCUMENTATION
 {documentation}
 
-GITHUB INFORMATION
+GITHUB METRICS
 {github_info}
 
-WEB SEARCH
+LIVE WEB SEARCH
 {web_results}
 
-Generate a professional report.
-
-Use exactly these headings:
+Generate a report with the following headings:
 
 ## Summary
 
@@ -55,7 +53,8 @@ Use exactly these headings:
 
 ## Risk Score (0-10)
 
-Give clear reasoning.
+If information is unavailable, explicitly state that it is unavailable.
+Do not invent facts.
 """
 
         response = self.client.models.generate_content(

@@ -9,13 +9,13 @@ class ReportGenerator:
     def create_report(
         self,
         package_name,
-        docs,
-        github,
-        web
+        documentation,
+        github_info,
+        web_results
     ):
         return self.ai.generate_report(
-            package_name,
-            docs,
-            github,
-            web
+            package_name=package_name,
+            documentation=documentation,
+            github_info=github_info,
+            web_results=web_results
         )
