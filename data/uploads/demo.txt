@@ -1,0 +1,11 @@
+This is a demo document for testing the RAG pipeline.
+
+The Retrieval-Augmented Generation (RAG) pipeline works by first loading documents from a source directory, splitting them into smaller chunks, and converting those chunks into vector embeddings. These embeddings are stored in an index so that, when a user asks a question, the system can retrieve the most relevant chunks and use them as context for generating an accurate answer.
+
+Key facts about this demo file:
+- The capital of France is Paris.
+- The RAG Assistant project uses the BAAI/bge-small-en-v1.5 embedding model.
+- Documents are chunked into pieces of 512 tokens with an overlap of 50 tokens.
+- The top 5 most relevant chunks are retrieved for each query.
+
+You can ask questions like "What is the capital of France?" or "What embedding model does this project use?" to verify that the pipeline retrieves and uses this content correctly.
