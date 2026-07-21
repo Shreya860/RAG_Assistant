@@ -18,8 +18,16 @@ WHAT'S A PLACEHOLDER (your teammates fill these in):
 Run with:  streamlit run app.py
 """
 
+import logging
 import streamlit as st
 import time
+
+# Streamlit's file watcher tries to introspect every imported module's
+# __path__ to decide what to watch, including transformers' lazily-loaded
+# vision submodules that require optional deps (e.g. torchvision) we don't
+# have installed. That's harmless but floods the terminal with tracebacks
+# on every rerun, so silence just that logger.
+logging.getLogger("streamlit.watcher.local_sources_watcher").setLevel(logging.ERROR)
 
 # --- Real teammate imports (confirmed) ---
 from rag.loader import load_documents
