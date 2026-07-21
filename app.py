@@ -22,6 +22,7 @@ import streamlit as st
 import time
 
 # --- Real teammate imports (confirmed) ---
+from rag.loader import load_documents
 from rag.storage_manager import get_or_create_index
 from rag.retriever import get_retriever
 from rag.ai_assistant import GeminiAssistant
@@ -142,19 +143,19 @@ def load_rag_index():
     Cached so this only runs once per app session, not on every rerun —
     this is what gives sub-second search after the first load.
     """
-    return get_or_create_index()
+    return get_or_create_index(load_documents())
 
 
 @st.cache_resource(show_spinner=False)
 def load_retriever(_index):
     """Cached retriever built from the loaded index."""
-    return get_retriever(_index)
+    return get_retriever()
 
 
 @st.cache_resource(show_spinner=False)
-def load_gemini_assistant():
+def load_gemini_assistant(_gemini_key):
     """Cached GeminiAssistant instance (from rag/ai_assistant.py)."""
-    return GeminiAssistant()
+    return GeminiAssistant(api_key=_gemini_key)
 
 
 # ---------------------------------------------------------------------------
@@ -177,14 +178,14 @@ def query_web_search(package_name: str, serper_key: str) -> str:
 
 
 def synthesize_with_gemini(package_name: str, retriever, github_data: dict,
-                            web_data: str) -> str:
+                            web_data: str, gemini_key: str) -> str:
     """
     Calls the real GeminiAssistant.generate_report(...) from rag/ai_assistant.py.
     It expects: package_name, documentation, github_info, web_results.
     'documentation' here comes from querying the local retriever for relevant
     compliance/doc context — adjust once we confirm the exact retriever API.
     """
-    assistant = load_gemini_assistant()
+    assistant = load_gemini_assistant(gemini_key)
 
     # retriever.retrieve(...) is a common LlamaIndex pattern — confirm the
     # exact method name against retriever.py if this errors.
@@ -237,7 +238,7 @@ if user_input:
             web_data = query_web_search(user_input, serper_key)
 
             st.write("🤖 Synthesizing risk assessment with Gemini...")
-            answer = synthesize_with_gemini(user_input, retriever, github_data, web_data)
+            answer = synthesize_with_gemini(user_input, retriever, github_data, web_data, gemini_key)
 
         status_box.update(label="Audit complete", state="complete", expanded=False)
 

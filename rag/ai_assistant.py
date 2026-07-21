@@ -6,13 +6,12 @@ from google import genai
 
 load_dotenv()
 
-api_key = os.getenv("GEMINI_API_KEY")
 
-client = genai.Client(api_key=api_key)
 class GeminiAssistant:
 
-    def __init__(self):
-        self.client = client
+    def __init__(self, api_key=None):
+        api_key = api_key or os.getenv("GEMINI_API_KEY")
+        self.client = genai.Client(api_key=api_key)
 
     def generate_report(
         self,
