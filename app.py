@@ -148,8 +148,6 @@ with st.sidebar:
 # ---------------------------------------------------------------------------
 @st.cache_resource(show_spinner=False)
 def load_rag_index():
-@st.cache_resource(show_spinner=False)
-def load_rag_index():
     """
     Loads (or builds, first run only) the local compliance index.
     Cached so this only runs once per app session, not on every rerun —
