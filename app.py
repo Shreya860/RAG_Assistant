@@ -34,6 +34,7 @@ from rag.loader import load_documents
 from rag.storage_manager import get_or_create_index
 from rag.retriever import get_retriever
 from rag.ai_assistant import GeminiAssistant
+import github_matrix
 try:
     from search_engine import run_serper_search, scrape_documentation_url
     _search_engine_import_error = None
@@ -174,10 +175,23 @@ def load_gemini_assistant(_gemini_key):
 # ---------------------------------------------------------------------------
 def query_github_api(package_name: str, token: str) -> dict:
     """
-    TODO: swap for the real function once search_engine.py is confirmed.
-    Expected to return GitHub metrics (stars, open issues, forks, last commit).
+    Calls the real fetch_repo_metrics() from github_matrix.py.
+    package_name must resolve to a GitHub 'owner/repo' slug or full URL —
+    falls back to N/A if it doesn't (e.g. a plain PyPI package name).
     """
-    return {"stars": "N/A", "open_issues": "N/A", "forks": "N/A"}
+    if token:
+        github_matrix.GITHUB_TOKEN = token
+
+    try:
+        metrics = github_matrix.fetch_repo_metrics(package_name)
+        return {
+            "stars": metrics["stars"],
+            "open_issues": metrics["open_issues"],
+            "forks": metrics["forks"],
+            "last_pushed": metrics["last_pushed"],
+        }
+    except Exception as e:
+        return {"stars": "N/A", "open_issues": "N/A", "forks": "N/A", "note": str(e)}
 
 
 def query_web_search(package_name: str, serper_key: str) -> str:
