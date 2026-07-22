@@ -32,6 +32,7 @@ logging.getLogger("streamlit.watcher.local_sources_watcher").setLevel(logging.ER
 # --- Real teammate imports (confirmed) ---
 from rag.loader import load_documents
 from rag.storage_manager import get_or_create_index
+from rag.loader import load_documents
 from rag.retriever import get_retriever
 from rag.ai_assistant import GeminiAssistant
 import github_matrix
@@ -147,19 +148,21 @@ with st.sidebar:
 # ---------------------------------------------------------------------------
 @st.cache_resource(show_spinner=False)
 def load_rag_index():
+@st.cache_resource(show_spinner=False)
+def load_rag_index():
     """
     Loads (or builds, first run only) the local compliance index.
     Cached so this only runs once per app session, not on every rerun —
     this is what gives sub-second search after the first load.
     """
-    return get_or_create_index(load_documents())
+    documents = load_documents()
+    return get_or_create_index(documents)
 
 
 @st.cache_resource(show_spinner=False)
-def load_retriever(_index):
+def load_retriever():
     """Cached retriever built from the loaded index."""
     return get_retriever()
-
 
 @st.cache_resource(show_spinner=False)
 def load_gemini_assistant(_gemini_key):
@@ -251,7 +254,7 @@ if user_input:
         with status_box:
             st.write("📁 Loading local compliance index...")
             index = load_rag_index()
-            retriever = load_retriever(index)
+            retriever = load_retriever()
 
             st.write("🌐 Fetching GitHub repository metrics...")
             github_data = query_github_api(user_input, github_token)
